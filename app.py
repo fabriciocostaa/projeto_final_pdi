@@ -13,16 +13,13 @@ from analise_pessoal_cores import analysis_details, capturar_imagem
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
-STATIC_IMAGE_RELATIVE_PATH = "images/cool-summer.8128e21d.png"
 CAPTURED_IMAGE_PATH = STATIC_DIR / "images" / "sua_foto.jpg"
-
 
 class AnaliseRequest(BaseModel):
     capturar_webcam: bool = True
 
-
 app = FastAPI(
-    title="API de Colorimetria",
+    title="Color Match API",
     version="0.1.0",
 )
 
@@ -43,11 +40,9 @@ def read_root() -> dict[str, str]:
 
 
 @app.post("/api/analise")
-def iniciar_analise() -> dict[str, object]: # payload: AnaliseRequest
+def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
     try:
-        #if payload.capturar_webcam:
         capturar_imagem(CAPTURED_IMAGE_PATH)
-
         resultado = analysis_details(str(CAPTURED_IMAGE_PATH))
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
@@ -60,8 +55,9 @@ def iniciar_analise() -> dict[str, object]: # payload: AnaliseRequest
             "tom_principal": resultado["estacao"],
             "tom_detectado": resultado["tom"],
             "informacoes_estacao": resultado["descricao_estacao"],
-            "criterios_decisao": resultado["criterios"]
-            },
+            "criterios_decisao": resultado["criterios"],
+            "imagem_exibicao_base64": resultado["imagem_resultado"]["base64"],
+        },
     }
 
 

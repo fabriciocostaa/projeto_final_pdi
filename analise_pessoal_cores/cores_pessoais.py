@@ -9,6 +9,7 @@ from colormath.color_objects import HSVColor, LabColor, sRGBColor
 from . import analise_tom
 from .color_extract import DominantColors
 from .deteccao_facial import DetectFace
+from .utils import build_default_result_image_payload
 
 
 SEASON_DETAILS = {
@@ -99,6 +100,7 @@ def analysis_details(imgpath: str) -> dict[str, object]:
         "estacao": season_info["estacao"],
         "estacao_chave": season_key,
         "descricao_estacao": season_info["descricao"],
+        "imagem_resultado": build_default_result_image_payload(),
         "criterios": {
             "partes_analisadas": ["Pele", "Sobrancelhas", "Olhos"],
             "metodo": [
@@ -112,7 +114,3 @@ def analysis_details(imgpath: str) -> dict[str, object]:
 
     print(f"A coloracao pessoal de {os.path.basename(imgpath)} e {tone}.")
     return result
-
-
-def analysis(imgpath: str) -> str:
-    return str(analysis_details(imgpath)["tom"])

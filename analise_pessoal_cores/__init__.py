@@ -7,7 +7,9 @@ __all__ = [
     "DominantColors",
     "analysis",
     "analysis_details",
+    "build_default_result_image_payload",
     "capturar_imagem",
+    "encode_image_base64",
     "gerar_paleta",
     "is_warm",
     "is_spr",
@@ -23,6 +25,8 @@ _EXPORT_MAP = {
     "analysis_details": (".cores_pessoais", "analysis_details"),
     "DetectFace": (".deteccao_facial", "DetectFace"),
     "capturar_imagem": (".deteccao_facial", "capturar_imagem"),
+    "build_default_result_image_payload": (".utils", "build_default_result_image_payload"),
+    "encode_image_base64": (".utils", "encode_image_base64"),
     "gerar_paleta": (".recomendacao_cores", "gerar_paleta"),
 }
 
