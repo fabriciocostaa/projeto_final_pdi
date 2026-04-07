@@ -17,7 +17,7 @@ SEASON_DETAILS = {
         "descricao": "Perfil de tons quentes, vivos e luminosos, normalmente favorecido por cores claras e energicas.",
     },
     "summer": {
-        "estacao": "Verao",
+        "estacao": "Verão",
         "descricao": "Perfil de tons frios e suaves, geralmente harmonizado com cores delicadas, acinzentadas e elegantes.",
     },
     "fall": {
@@ -100,32 +100,12 @@ def analysis_details(imgpath: str) -> dict[str, object]:
         "estacao_chave": season_key,
         "descricao_estacao": season_info["descricao"],
         "criterios": {
-            "partes_analisadas": ["pele", "sobrancelhas", "olhos"],
+            "partes_analisadas": ["Pele", "Sobrancelhas", "Olhos"],
             "metodo": [
                 "Comparacao de temperatura entre referencias quentes e frias usando o canal Lab b.",
                 "Comparacao de saturacao em HSV para diferenciar primavera e outono.",
                 "Comparacao de saturacao em HSV para diferenciar verao e inverno.",
             ],
-            "valores_lab_b": {
-                "pele": lab_b_values[0],
-                "sobrancelhas": lab_b_values[1],
-                "olhos": lab_b_values[2],
-            },
-            "valores_hsv_s": {
-                "pele": hsv_s_values[0],
-                "sobrancelhas": hsv_s_values[1],
-                "olhos": hsv_s_values[2],
-            },
-            "pesos_lab": {
-                "pele": lab_weight[0],
-                "sobrancelhas": lab_weight[1],
-                "olhos": lab_weight[2],
-            },
-            "pesos_hsv": {
-                "pele": hsv_weight[0],
-                "sobrancelhas": hsv_weight[1],
-                "olhos": hsv_weight[2],
-            },
             "subtom_identificado": subtom,
         },
     }
