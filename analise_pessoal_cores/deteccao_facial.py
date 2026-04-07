@@ -11,7 +11,7 @@ from imutils import face_utils
 MODULE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODULE_DIR.parent
 DEFAULT_LANDMARK_PATH = PROJECT_ROOT / "shape_predictor_68_face_landmarks.dat"
-DEFAULT_CAPTURE_PATH = PROJECT_ROOT / "static" / "sua_foto.jpg"
+DEFAULT_CAPTURE_PATH = PROJECT_ROOT / "static" / "images" / "sua_foto.jpg"
 
 
 def capturar_imagem(output_path: str | Path = DEFAULT_CAPTURE_PATH) -> None:
