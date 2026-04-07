@@ -14,6 +14,20 @@ DEFAULT_LANDMARK_PATH = PROJECT_ROOT / "shape_predictor_68_face_landmarks.dat"
 DEFAULT_CAPTURE_PATH = PROJECT_ROOT / "static" / "images" / "sua_foto.jpg"
 
 
+def preparar_caminho_imagem(
+    path_img: str | Path | None = None,
+    output_path: str | Path = DEFAULT_CAPTURE_PATH,
+) -> Path:
+    if path_img is not None:
+        resolved_path = Path(path_img)
+        if not resolved_path.exists():
+            raise FileNotFoundError(f"Nao foi possivel localizar a imagem: {resolved_path}")
+        return resolved_path
+
+    capturar_imagem(output_path)
+    return Path(output_path)
+
+
 def capturar_imagem(output_path: str | Path = DEFAULT_CAPTURE_PATH) -> None:
     cap = cv2.VideoCapture(0)
     print("Pressione [s] para salvar as imagens ou [q] para sair.")

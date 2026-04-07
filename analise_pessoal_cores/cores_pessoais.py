@@ -8,7 +8,7 @@ from colormath.color_objects import HSVColor, LabColor, sRGBColor
 
 from . import analise_tom
 from .color_extract import DominantColors
-from .deteccao_facial import DetectFace
+from .deteccao_facial import DetectFace, preparar_caminho_imagem
 from .utils import build_default_result_image_payload
 
 
@@ -40,8 +40,9 @@ TONE_TO_SEASON = {
 }
 
 
-def analysis_details(imgpath: str) -> dict[str, object]:
-    df = DetectFace(imgpath)
+def analysis_details(imgpath: str | None = None) -> dict[str, object]:
+    resolved_imgpath = preparar_caminho_imagem(imgpath)
+    df = DetectFace(resolved_imgpath)
     face_parts = [
         df.left_cheek,
         df.right_cheek,
@@ -95,7 +96,7 @@ def analysis_details(imgpath: str) -> dict[str, object]:
     season_info = SEASON_DETAILS[season_key]
 
     result = {
-        "imagem_analisada": os.path.basename(imgpath),
+        "imagem_analisada": os.path.basename(str(resolved_imgpath)),
         "tom": tone,
         "estacao": season_info["estacao"],
         "estacao_chave": season_key,
@@ -112,5 +113,5 @@ def analysis_details(imgpath: str) -> dict[str, object]:
         },
     }
 
-    print(f"A coloracao pessoal de {os.path.basename(imgpath)} e {tone}.")
+    print(f"A coloracao pessoal de {os.path.basename(str(resolved_imgpath))} e {tone}.")
     return result

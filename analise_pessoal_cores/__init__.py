@@ -14,6 +14,8 @@ __all__ = [
     "is_warm",
     "is_spr",
     "is_smr",
+    "preparar_caminho_imagem",
+    "save_base64_as_jpg",
 ]
 
 _EXPORT_MAP = {
@@ -25,8 +27,10 @@ _EXPORT_MAP = {
     "analysis_details": (".cores_pessoais", "analysis_details"),
     "DetectFace": (".deteccao_facial", "DetectFace"),
     "capturar_imagem": (".deteccao_facial", "capturar_imagem"),
+    "preparar_caminho_imagem": (".deteccao_facial", "preparar_caminho_imagem"),
     "build_default_result_image_payload": (".utils", "build_default_result_image_payload"),
     "encode_image_base64": (".utils", "encode_image_base64"),
+    "save_base64_as_jpg": (".utils", "save_base64_as_jpg"),
     "gerar_paleta": (".recomendacao_cores", "gerar_paleta"),
 }
 
