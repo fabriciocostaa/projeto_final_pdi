@@ -4,6 +4,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import uvicorn
@@ -38,10 +39,14 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-
-@app.get("/")
+@app.get("/health")
 def read_root() -> dict[str, str]:
     return {"message": "API de colorimetria online."}
+
+
+@app.get("/", include_in_schema=False)
+def read_root() -> FileResponse:
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.post("/api/analise")
