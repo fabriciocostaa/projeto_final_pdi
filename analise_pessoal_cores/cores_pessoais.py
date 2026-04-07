@@ -32,11 +32,11 @@ SEASON_DETAILS = {
 }
 
 TONE_TO_SEASON = {
-    "tom quente de primavera(spring)": "spring",
-    "tom quente de outono(fall)": "fall",
-    "tom fresco de verao(summer)": "summer",
-    "tom fresco de verão(summer)": "summer",
-    "tom legal de inverno(winter)": "winter",
+    "Tom quente de primavera": "spring",
+    "Tom quente de outono": "fall",
+    "Tom fresco de verao": "summer",
+    "Tom fresco de verão": "summer",
+    "Tom legal de inverno": "winter",
 }
 
 
@@ -83,14 +83,14 @@ def analysis_details(imgpath: str | None = None) -> dict[str, object]:
 
     if subtom == "quente":
         if analise_tom.is_spr(hsv_s_values, hsv_weight):
-            tone = "tom quente de primavera(spring)"
+            tone = "Tom quente de primavera"
         else:
-            tone = "tom quente de outono(fall)"
+            tone = "Tom quente de outono"
     else:
         if analise_tom.is_smr(hsv_s_values, hsv_weight):
-            tone = "tom fresco de verao(summer)"
+            tone = "Tom fresco de verao"
         else:
-            tone = "tom legal de inverno(winter)"
+            tone = "Tom legal de inverno"
 
     season_key = TONE_TO_SEASON[tone]
     season_info = SEASON_DETAILS[season_key]
@@ -103,11 +103,11 @@ def analysis_details(imgpath: str | None = None) -> dict[str, object]:
         "descricao_estacao": season_info["descricao"],
         "imagem_resultado": build_default_result_image_payload(),
         "criterios": {
-            "partes_analisadas": ["Pele", "Sobrancelhas", "Olhos"],
+            "partes_analisadas": ["pele", "sobrancelhas", "olhos"],
             "metodo": [
-                "Comparacao de temperatura entre referencias quentes e frias usando o canal Lab b.",
-                "Comparacao de saturacao em HSV para diferenciar primavera e outono.",
-                "Comparacao de saturacao em HSV para diferenciar verao e inverno.",
+                "Comparação de temperatura entre referencias quentes e frias usando o canal Lab b.",
+                "Comparação de saturacao em HSV para diferenciar primavera e outono.",
+                "Comparação de saturacao em HSV para diferenciar verão e inverno.",
             ],
             "subtom_identificado": subtom,
         },

@@ -57,11 +57,10 @@ PALETAS = {
 }
 
 _ALIAS = {
-    "tom quente de primavera(spring)": "spring",
-    "tom quente de outono(fall)": "fall",
-    "tom fresco de verao(summer)": "summer",
-    "tom fresco de verão(summer)": "summer",
-    "tom legal de inverno(winter)": "winter",
+    "Tom quente de primavera": "spring",
+    "Tom quente de outono": "fall",
+    "Tom fresco de verao": "summer",
+    "Tom legal de inverno": "winter",
     "spring": "spring",
     "fall": "fall",
     "summer": "summer",
