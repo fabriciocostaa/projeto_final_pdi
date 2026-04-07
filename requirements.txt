@@ -1,0 +1,9 @@
+numpy
+opencv-python
+scikit-learn
+colormath
+dlib
+imutils
+Pillow
+matplotlib
+
