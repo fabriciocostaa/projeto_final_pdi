@@ -11,7 +11,35 @@ from .color_extract import DominantColors
 from .deteccao_facial import DetectFace
 
 
-def analysis(imgpath: str) -> str:
+SEASON_DETAILS = {
+    "spring": {
+        "estacao": "Primavera",
+        "descricao": "Perfil de tons quentes, vivos e luminosos, normalmente favorecido por cores claras e energicas.",
+    },
+    "summer": {
+        "estacao": "Verao",
+        "descricao": "Perfil de tons frios e suaves, geralmente harmonizado com cores delicadas, acinzentadas e elegantes.",
+    },
+    "fall": {
+        "estacao": "Outono",
+        "descricao": "Perfil de tons quentes e terrosos, com melhor resposta a cores profundas, naturais e acolhedoras.",
+    },
+    "winter": {
+        "estacao": "Inverno",
+        "descricao": "Perfil de tons frios e intensos, valorizado por contrastes altos e cores nitidas e marcantes.",
+    },
+}
+
+TONE_TO_SEASON = {
+    "tom quente de primavera(spring)": "spring",
+    "tom quente de outono(fall)": "fall",
+    "tom fresco de verao(summer)": "summer",
+    "tom fresco de verão(summer)": "summer",
+    "tom legal de inverno(winter)": "winter",
+}
+
+
+def analysis_details(imgpath: str) -> dict[str, object]:
     df = DetectFace(imgpath)
     face_parts = [
         df.left_cheek,
@@ -49,7 +77,9 @@ def analysis(imgpath: str) -> str:
     lab_weight = [30, 20, 5]
     hsv_weight = [10, 1, 1]
 
-    if analise_tom.is_warm(lab_b_values, lab_weight):
+    subtom = "quente" if analise_tom.is_warm(lab_b_values, lab_weight) else "frio"
+
+    if subtom == "quente":
         if analise_tom.is_spr(hsv_s_values, hsv_weight):
             tone = "tom quente de primavera(spring)"
         else:
@@ -60,5 +90,49 @@ def analysis(imgpath: str) -> str:
         else:
             tone = "tom legal de inverno(winter)"
 
+    season_key = TONE_TO_SEASON[tone]
+    season_info = SEASON_DETAILS[season_key]
+
+    result = {
+        "imagem_analisada": os.path.basename(imgpath),
+        "tom": tone,
+        "estacao": season_info["estacao"],
+        "estacao_chave": season_key,
+        "descricao_estacao": season_info["descricao"],
+        "criterios": {
+            "partes_analisadas": ["pele", "sobrancelhas", "olhos"],
+            "metodo": [
+                "Comparacao de temperatura entre referencias quentes e frias usando o canal Lab b.",
+                "Comparacao de saturacao em HSV para diferenciar primavera e outono.",
+                "Comparacao de saturacao em HSV para diferenciar verao e inverno.",
+            ],
+            "valores_lab_b": {
+                "pele": lab_b_values[0],
+                "sobrancelhas": lab_b_values[1],
+                "olhos": lab_b_values[2],
+            },
+            "valores_hsv_s": {
+                "pele": hsv_s_values[0],
+                "sobrancelhas": hsv_s_values[1],
+                "olhos": hsv_s_values[2],
+            },
+            "pesos_lab": {
+                "pele": lab_weight[0],
+                "sobrancelhas": lab_weight[1],
+                "olhos": lab_weight[2],
+            },
+            "pesos_hsv": {
+                "pele": hsv_weight[0],
+                "sobrancelhas": hsv_weight[1],
+                "olhos": hsv_weight[2],
+            },
+            "subtom_identificado": subtom,
+        },
+    }
+
     print(f"A coloracao pessoal de {os.path.basename(imgpath)} e {tone}.")
-    return tone
+    return result
+
+
+def analysis(imgpath: str) -> str:
+    return str(analysis_details(imgpath)["tom"])
