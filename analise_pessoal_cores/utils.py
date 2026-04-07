@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import base64
+import io
 from pathlib import Path
+from PIL import Image
 
 
 MODULE_DIR = Path(__file__).resolve().parent
@@ -25,3 +27,18 @@ def build_default_result_image_payload() -> dict[str, str]:
         "base64": image_base64,
         "data_url": f"data:image/png;base64,{image_base64}",
     }
+
+
+def save_base64_as_jpg(image_base64: str, output_path: str | Path) -> Path:
+    base64_content = image_base64.strip()
+    if "," in base64_content:
+        base64_content = base64_content.split(",", 1)[1]
+
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    image_bytes = base64.b64decode(base64_content)
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    image.save(output, format="JPEG")
+
+    return output
