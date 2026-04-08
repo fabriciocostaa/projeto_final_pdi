@@ -8,3 +8,4 @@ dlib-bin
 imutils
 Pillow
 matplotlib
+opencv-python-headless

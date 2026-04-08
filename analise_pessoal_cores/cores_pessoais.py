@@ -88,7 +88,7 @@ def analysis_details(imgpath: str | None = None) -> dict[str, object]:
             tone = "Tom quente de outono"
     else:
         if analise_tom.is_smr(hsv_s_values, hsv_weight):
-            tone = "Tom fresco de verao"
+            tone = "Tom fresco de verão"
         else:
             tone = "Tom legal de inverno"
 

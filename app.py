@@ -9,13 +9,14 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import uvicorn
 
-from analise_pessoal_cores import analysis_details, save_base64_as_jpg
+from analise_pessoal_cores import analysis_details, save_base64_as_jpg, encode_image_base64, gerar_paleta
 
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 CAPTURED_IMAGE_PATH = STATIC_DIR / "images" / "sua_foto.jpg"
 UPLOADED_IMAGE_PATH = STATIC_DIR / "images" / "imagem_carregada.jpg"
+RESULT_IMAGE_PATH = STATIC_DIR / "images" / "imagem_resultado.jpg"
 
 class AnaliseRequest(BaseModel):
     capturar_webcam: bool = True
@@ -53,6 +54,7 @@ def read_root() -> FileResponse:
 def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
     try:
         resultado = analysis_details()
+        gerar_paleta(resultado["tom"], UPLOADED_IMAGE_PATH, RESULT_IMAGE_PATH)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except Exception as exc:
@@ -75,6 +77,7 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
     try:
         save_base64_as_jpg(payload.imagem_base64, UPLOADED_IMAGE_PATH)
         resultado = analysis_details(str(UPLOADED_IMAGE_PATH))
+        gerar_paleta(resultado["tom"], str(UPLOADED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except Exception as exc:
@@ -87,7 +90,7 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
             "tom_detectado": resultado["tom"],
             "informacoes_estacao": resultado["descricao_estacao"],
             "criterios_decisao": resultado["criterios"],
-            "imagem_exibicao_base64": resultado["imagem_resultado"]["base64"],
+            "imagem_exibicao_base64": encode_image_base64(RESULT_IMAGE_PATH),
         },
     }
 

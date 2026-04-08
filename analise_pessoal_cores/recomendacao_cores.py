@@ -59,7 +59,7 @@ PALETAS = {
 _ALIAS = {
     "Tom quente de primavera": "spring",
     "Tom quente de outono": "fall",
-    "Tom fresco de verao": "summer",
+    "Tom fresco de verão": "summer",
     "Tom legal de inverno": "winter",
     "spring": "spring",
     "fall": "fall",
@@ -74,7 +74,7 @@ def _hex_to_rgb(hex_cor: str) -> tuple[int, int, int]:
 
 
 def _normalizar_tom(tom: str) -> str:
-    chave = _ALIAS.get(tom.strip().lower())
+    chave = _ALIAS.get(tom.strip())
     if chave is None:
         raise ValueError(f"Tom '{tom}' nao reconhecido.")
     return chave

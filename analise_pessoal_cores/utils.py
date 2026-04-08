@@ -9,7 +9,7 @@ from PIL import Image
 MODULE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODULE_DIR.parent
 STATIC_DIR = PROJECT_ROOT / "static"
-DEFAULT_RESULT_IMAGE_RELATIVE_PATH = "images/cool-summer.8128e21d.png"
+DEFAULT_RESULT_IMAGE_RELATIVE_PATH = "images/imagem_resultado.jpg"
 DEFAULT_RESULT_IMAGE_PATH = STATIC_DIR / DEFAULT_RESULT_IMAGE_RELATIVE_PATH
 
 
