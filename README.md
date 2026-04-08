@@ -19,3 +19,9 @@ venv\Scripts\Activate.ps1
 ```powershell
 pip install -r requirements.txt
 ```
+
+### 4. Para rodar basta entrar no terminal da raiz do projeto:
+
+```powershell
+uvicorn app:app --reload
+```
