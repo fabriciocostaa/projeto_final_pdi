@@ -63,6 +63,9 @@ class DetectFace:
         self.img = cv2.imread(str(image))
         if self.img is None:
             raise FileNotFoundError(f"Nao foi possivel carregar a imagem: {image}")
+        
+        self.img = cv2.GaussianBlur(self.img, (5, 5), 0) 
+        #adicionando filtro gaussiano para reduzir reduído e melhorar a precisão de extração de cores
 
         self.right_eyebrow: np.ndarray | list[object] = []
         self.left_eyebrow: np.ndarray | list[object] = []
@@ -101,10 +104,14 @@ class DetectFace:
         x, y, w, h = cv2.boundingRect(face_part_points)
         crop = self.img[y:y + h, x:x + w]
         adj_points = np.array([np.array([p[0] - x, p[1] - y]) for p in face_part_points])
-
-        mask = np.zeros((crop.shape[0], crop.shape[1]))
+        
+        mask = np.zeros((crop.shape[0], crop.shape[1]), dtype=np.uint8)
         cv2.fillConvexPoly(mask, adj_points, 1)
+        
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)  # fecha buracos na máscara
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)   # remove ruído nas bordas
+        
         mask = mask.astype(bool)
         crop[np.logical_not(mask)] = [255, 0, 0]
-
         return crop

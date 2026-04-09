@@ -1,5 +1,6 @@
 const cameraButton = document.getElementById("camera-button");
 const uploadButton = document.getElementById("upload-button");
+const calibrationButton = document.getElementById("calibracao");
 const fileInput = document.getElementById("file-input");
 const actionFeedback = document.getElementById("action-feedback");
 const statusBadge = document.getElementById("status-badge");
@@ -104,6 +105,28 @@ const runCameraAnalysis = async () => {
   }
 };
 
+const runColorCheck = async (file) => {
+  setLoadingState(true, "Convertendo a imagem e enviando para análise...");
+
+  try {
+    const imagemBase64 = await toBase64(file);
+    const response = await fetch("/api/check_cores", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ imagem_base64: imagemBase64 }),
+    });
+
+    if (!response.ok) {
+      await handleApiError(response);
+    }
+    setLoadingState(false, "Calibração feita !");
+  } catch (error) {
+    resetErrorState(error.message);
+  }
+};
+
 const runUploadAnalysis = async (file) => {
   setLoadingState(true, "Convertendo a imagem e enviando para análise...");
 
@@ -129,18 +152,28 @@ const runUploadAnalysis = async (file) => {
   }
 };
 
+let flag = null;
 cameraButton.addEventListener("click", runCameraAnalysis);
 
 uploadButton.addEventListener("click", () => {
+  flag = "upload";
+  fileInput.click();
+});
+
+calibrationButton.addEventListener("click", () => {
+  flag = "calibracao";
   fileInput.click();
 });
 
 fileInput.addEventListener("change", async (event) => {
   const [file] = event.target.files;
-  if (!file) {
-    return;
+  if (!file) return;
+
+  if (flag === "calibracao") {
+    await runColorCheck(file);
+  } else if (flag === "upload") {
+    await runUploadAnalysis(file);
   }
 
-  await runUploadAnalysis(file);
   fileInput.value = "";
 });

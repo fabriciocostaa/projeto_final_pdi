@@ -10,12 +10,21 @@ from sklearn.cluster import KMeans
 class DominantColors:
     def __init__(self, image: np.ndarray, clusters: int = 3) -> None:
         self.clusters = clusters
-        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        # Segmentação por range de cor de pele em HSV
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        lower = np.array([0, 20, 70], dtype=np.uint8)
+        upper = np.array([20, 255, 255], dtype=np.uint8)
+        skin_mask = cv2.inRange(hsv, lower, upper)
+
+        # Aplica máscara — mantém só pixels de pele
+        segmented = cv2.bitwise_and(image, image, mask=skin_mask)
+        img = cv2.cvtColor(segmented, cv2.COLOR_BGR2RGB)
+
         self.image = img.reshape((img.shape[0] * img.shape[1], 3))
 
         kmeans = KMeans(n_clusters=self.clusters)
         kmeans.fit(self.image)
-
         self.colors = kmeans.cluster_centers_
         self.labels = kmeans.labels_
 
@@ -35,8 +44,13 @@ class DominantColors:
         for i in range(self.clusters):
             colors[i] = colors[i].astype(int)
 
-        # Remove pixels que vieram do fundo mascarado.
-        color_filter = [colors[i][2] < 250 and colors[i][0] > 10 for i in range(self.clusters)]
+        # Remove pixels que vieram do fundo mascarado e pixels pretos da segmentação
+        color_filter = [
+            colors[i][2] < 250        # remove fundo azul da máscara facial
+            and colors[i][0] > 10     # remove pixels muito escuros
+            and not (colors[i][0] < 10 and colors[i][1] < 10 and colors[i][2] < 10)  # remove preto da segmentação
+            for i in range(self.clusters)
+        ]
         colors = list(compress(colors, color_filter))
         filtered_hist = hist[color_filter]
 
