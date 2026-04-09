@@ -34,7 +34,6 @@ SEASON_DETAILS = {
 TONE_TO_SEASON = {
     "Tom quente de primavera": "spring",
     "Tom quente de outono": "fall",
-    "Tom fresco de verao": "summer",
     "Tom fresco de verão": "summer",
     "Tom legal de inverno": "winter",
 }
@@ -101,7 +100,6 @@ def analysis_details(imgpath: str | None = None) -> dict[str, object]:
         "estacao": season_info["estacao"],
         "estacao_chave": season_key,
         "descricao_estacao": season_info["descricao"],
-        "imagem_resultado": build_default_result_image_payload(),
         "criterios": {
             "partes_analisadas": ["pele", "sobrancelhas", "olhos"],
             "metodo": [

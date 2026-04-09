@@ -54,11 +54,13 @@ def read_root() -> FileResponse:
 def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
     try:
         resultado = analysis_details()
-        gerar_paleta(resultado["tom"], UPLOADED_IMAGE_PATH, RESULT_IMAGE_PATH)
+        gerar_paleta(resultado["tom"], str(UPLOADED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        print(f"Erro FileNotFoundError: {exc}")
+        raise HTTPException(status_code=404, detail="Imagem não encontrada.") from exc
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        print(f"Erro Exception: {exc}")
+        raise HTTPException(status_code=400, detail="Erro ao processar a imagem") from exc
 
     return {
         "status": "sucesso",
@@ -67,7 +69,7 @@ def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
             "tom_detectado": resultado["tom"],
             "informacoes_estacao": resultado["descricao_estacao"],
             "criterios_decisao": resultado["criterios"],
-            "imagem_exibicao_base64": resultado["imagem_resultado"]["base64"],
+            "imagem_exibicao_base64": encode_image_base64(RESULT_IMAGE_PATH),
         },
     }
 
@@ -79,9 +81,11 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
         resultado = analysis_details(str(UPLOADED_IMAGE_PATH))
         gerar_paleta(resultado["tom"], str(UPLOADED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        print(f"ERRO FileNotFoundError: {exc}")
+        raise HTTPException(status_code=404, detail="Imagem não encontrada.") from exc
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        print(f"ERRO Exception: {exc}")
+        raise HTTPException(status_code=400, detail="Erro ao processar a imagem") from exc
 
     return {
         "status": "sucesso",

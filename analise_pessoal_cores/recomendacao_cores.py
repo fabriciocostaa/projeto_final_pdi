@@ -31,7 +31,7 @@ PALETAS = {
         ],
     },
     "summer": {
-        "nome": "Tom Fresco de Verao",
+        "nome": "Tom Fresco de Verão",
         "fundo": "#F5F5FA",
         "texto": "#2E4060",
         "cores": [
