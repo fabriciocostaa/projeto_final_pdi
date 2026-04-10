@@ -60,12 +60,12 @@ class DetectFace:
         self.detector = dlib.get_frontal_face_detector()
         self.predictor = dlib.shape_predictor(str(predictor_path))
 
-        self.img = cv2.imread(str(image))
-        if self.img is None:
+        self.original = cv2.imread(str(image))
+        if self.original is None:
             raise FileNotFoundError(f"Nao foi possivel carregar a imagem: {image}")
         
-        self.img = cv2.GaussianBlur(self.img, (5, 5), 0) 
-        #adicionando filtro gaussiano para reduzir reduído e melhorar a precisão de extração de cores
+        # ETAPA 1 - filtro gaussiano
+        self.img = cv2.GaussianBlur(self.original, (5, 5), 0)
 
         self.right_eyebrow: np.ndarray | list[object] = []
         self.left_eyebrow: np.ndarray | list[object] = []
@@ -90,28 +90,63 @@ class DetectFace:
         face_parts = []
         for _, (i, j) in face_utils.FACIAL_LANDMARKS_IDXS.items():
             face_parts.append(shape[i:j])
-
         face_parts = face_parts[1:5]
 
-        self.right_eyebrow = self.extract_face_part(face_parts[0])
-        self.left_eyebrow = self.extract_face_part(face_parts[1])
-        self.right_eye = self.extract_face_part(face_parts[2])
-        self.left_eye = self.extract_face_part(face_parts[3])
+        self.gaussian_img = self.img.copy()
+
+        self.landmarks_img = self.original.copy()
+        for (x, y) in shape:
+            cv2.circle(self.landmarks_img, (x, y), 2, (0, 255, 0), -1)    
+        
+        idxs = dict(face_utils.FACIAL_LANDMARKS_IDXS)
+        self.right_eyebrow = self.extract_face_part(shape[idxs["right_eyebrow"][0]:idxs["right_eyebrow"][1]])
+        self.left_eyebrow  = self.extract_face_part(shape[idxs["left_eyebrow"][0]:idxs["left_eyebrow"][1]])
+        self.right_eye     = self.extract_face_part(shape[idxs["right_eye"][0]:idxs["right_eye"][1]])
+        self.left_eye      = self.extract_face_part(shape[idxs["left_eye"][0]:idxs["left_eye"][1]])
         self.left_cheek = self.img[shape[29][1]:shape[33][1], shape[4][0]:shape[48][0]]
         self.right_cheek = self.img[shape[29][1]:shape[33][1], shape[54][0]:shape[12][0]]
 
+        # imagem das regiões segmentadas destacadas
+        self.segmentacao_img = self.gaussian_img.copy()
+        regioes = [
+            (shape[29][1], shape[33][1], shape[4][0],  shape[48][0]),   # bochecha esquerda
+            (shape[29][1], shape[33][1], shape[54][0], shape[12][0]),   # bochecha direita
+        ]
+        for (y0, y1, x0, x1) in regioes:
+            cv2.rectangle(self.segmentacao_img, (x0, y0), (x1, y1), (255, 165, 0), 2)
+
+        for points in [face_parts[0], face_parts[1], face_parts[2], face_parts[3]]:
+            hull = cv2.convexHull(points)
+            cv2.polylines(self.segmentacao_img, [hull], True, (255, 165, 0), 2)
+
     def extract_face_part(self, face_part_points: np.ndarray) -> np.ndarray:
         x, y, w, h = cv2.boundingRect(face_part_points)
-        crop = self.img[y:y + h, x:x + w]
-        adj_points = np.array([np.array([p[0] - x, p[1] - y]) for p in face_part_points])
+    
+        # .copy() evita que modificações no crop afetem self.img original
+        crop = self.img[y:y + h, x:x + w].copy()
         
+        # ajusta os pontos dos landmarks para coordenadas locais do recorte
+        adj_points = np.array([np.array([p[0] - x, p[1] - y]) for p in face_part_points])
+
+        # cria máscara binária zerada do mesmo tamanho do recorte
+        # fillConvexPoly preenche o interior do contorno dos landmarks com 1
         mask = np.zeros((crop.shape[0], crop.shape[1]), dtype=np.uint8)
         cv2.fillConvexPoly(mask, adj_points, 1)
-        
+
+        # MORPH_CLOSE = dilatação seguida de erosão
+        # fecha buracos internos na máscara causados por gaps entre os landmarks
+        # exemplo: pixels não cobertos pelo fillConvexPoly dentro da sobrancelha
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)  # fecha buracos na máscara
-        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)   # remove ruído nas bordas
-        
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
+        # MORPH_OPEN = erosão seguida de dilatação
+        # remove pixels espúrios nas bordas da máscara gerados pelo fillConvexPoly
+        # evita que pixels de pele ao redor da região contaminem a extração de cor
+        # a ordem CLOSE → OPEN é intencional: primeiro fecha buracos, depois limpa bordas
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+
+        # converte para bool e pinta pixels fora da máscara de azul [255, 0, 0]
+        # o azul é filtrado depois no color_extract.py pelo color_filter do get_histogram
         mask = mask.astype(bool)
         crop[np.logical_not(mask)] = [255, 0, 0]
         return crop

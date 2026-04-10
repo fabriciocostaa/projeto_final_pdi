@@ -4,6 +4,7 @@ import base64
 import io
 from pathlib import Path
 from PIL import Image
+import cv2
 
 
 MODULE_DIR = Path(__file__).resolve().parent
@@ -19,6 +20,9 @@ def encode_image_base64(image_path: str | Path) -> str:
         raise FileNotFoundError(f"Nao foi possivel localizar a imagem: {resolved_path}")
     return base64.b64encode(resolved_path.read_bytes()).decode("utf-8")
 
+def img_to_base64(img):
+    _, buffer = cv2.imencode('.jpg', img)
+    return base64.b64encode(buffer).decode("utf-8")
 
 def build_default_result_image_payload() -> dict[str, str]:
     image_base64 = encode_image_base64(DEFAULT_RESULT_IMAGE_PATH)

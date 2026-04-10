@@ -85,6 +85,68 @@
         </section>
       </section>
 
+      <section class="pipeline-timeline">
+        <h2 class="pipeline-title">Etapas da análise</h2>
+
+        <!-- Etapa 1 -->
+        <div class="timeline-item">
+          <div class="timeline-number green">1</div>
+          <div class="timeline-content">
+            <h3>
+              Filtro gaussiano
+              <span class="badge green">filtragem</span>
+            </h3>
+            <p>
+              Kernel 5×5 aplicado para reduzir ruído antes da detecção facial.
+            </p>
+
+            <div class="timeline-image">
+              <img id="img-gauss">
+              <span>Imagem suavizada (bordas menos ruidosas)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Etapa 2 -->
+        <div class="timeline-item">
+          <div class="timeline-number yellow">2</div>
+          <div class="timeline-content">
+            <h3>
+              Detecção de landmarks
+              <span class="badge yellow">morfologia</span>
+            </h3>
+            <p>
+              68 pontos faciais detectados via dlib.
+            </p>
+
+            <div class="timeline-image">
+              <img id="img-landmarks">
+              <span>Regiões faciais identificadas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Etapa 3 -->
+        <div class="timeline-item">
+          <div class="timeline-number purple">3</div>
+          <div class="timeline-content">
+            <h3>
+              Segmentação + cores dominantes
+              <span class="badge purple">extração</span>
+            </h3>
+            <p>
+              Regiões faciais separadas para análise de cor.
+            </p>
+
+            <div class="timeline-image">
+              <img id="img-segmentacao">
+              <span>Bochechas, olhos e sobrancelhas</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
       <section class="result-section" id="resultado" aria-live="polite">
         <div class="result-header">
           <div>

@@ -11,6 +11,8 @@ import uvicorn
 
 from analise_pessoal_cores import analysis_details, save_base64_as_jpg, encode_image_base64, gerar_paleta
 from analise_pessoal_cores import check_cores
+from analise_pessoal_cores import DetectFace
+from analise_pessoal_cores.utils import img_to_base64
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -78,9 +80,15 @@ def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
 @app.post("/api/analise_upload")
 def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
     try:
+        # salva imagem enviada
         save_base64_as_jpg(payload.imagem_base64, UPLOADED_IMAGE_PATH)
+
+        detect = DetectFace(str(UPLOADED_IMAGE_PATH))
+
+        # análise original continua igual
         resultado = analysis_details(str(UPLOADED_IMAGE_PATH))
         gerar_paleta(resultado["tom"], str(UPLOADED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
+
     except FileNotFoundError as exc:
         print(f"ERRO FileNotFoundError: {exc}")
         raise HTTPException(status_code=404, detail="Imagem não encontrada.") from exc
@@ -90,6 +98,13 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
 
     return {
         "status": "sucesso",
+
+        "etapas": {
+            "gaussiano": img_to_base64(detect.gaussian_img),
+            "landmarks": img_to_base64(detect.landmarks_img),
+            "segmentacao": img_to_base64(detect.segmentacao_img)
+        },
+
         "resultado": {
             "tom_principal": resultado["estacao"],
             "tom_detectado": resultado["tom"],

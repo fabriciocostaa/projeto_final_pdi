@@ -2,7 +2,6 @@ from __future__ import annotations
 
 # vetor [pele, sobrancelhas e olhos]
 # peso = [30, 20, 5]
-
 def is_warm(lab_b: list[float], weights: list[float]) -> int:
     # calibração ajustada para ampliar separação entre quente e frio
     warm_b_std = [14.0, 13.5, 5.0]
