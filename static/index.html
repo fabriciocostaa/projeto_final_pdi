@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ColorMatch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="#hero" aria-label="Ir para o topo">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text">ColorMatch</span>
+      </a>
+
+      <nav class="topnav">
+        <a href="#sobre">O que é colorimetria?</a>
+        <a href="#quem-somos">Quem somos</a>
+        <a href="#manual">Manual do usuário</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Análise de colorimetria pessoal com apoio de visão computacional</p>
+          <h1>Bem-vindo(a) ao ColorMatch!</h1>
+          <p class="hero-text">
+            Descubra a sua estação cromática a partir de uma foto e receba uma leitura inicial
+            com critérios considerados pela análise.
+          </p>
+        </div>
+
+        <section class="actions-grid" aria-label="Ações principais">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <span class="panel-kicker">Iniciar análise</span>
+              <h3>Escolha como enviar sua imagem</h3>
+            </div>
+
+            <div class="action-buttons">
+              <button class="action-button action-button-camera" id="camera-button" type="button">
+                <span class="action-button-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M8 6 9.5 4h5L16 6h2.2A2.8 2.8 0 0 1 21 8.8v7.4A2.8 2.8 0 0 1 18.2 19H5.8A2.8 2.8 0 0 1 3 16.2V8.8A2.8 2.8 0 0 1 5.8 6Z"></path>
+                    <circle cx="12" cy="12" r="3.7"></circle>
+                  </svg>
+                </span>
+                <span class="action-button-text">Capturar com câmera do dispositivo</span>
+              </button>
+
+              <button class="action-button action-button-upload" id="upload-button" type="button">
+                <span class="action-button-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5Z"></path>
+                    <path d="M7 16.5 10.2 12l2.5 3 2-1.8L17 16.5"></path>
+                    <circle cx="9" cy="8.5" r="1.2"></circle>
+                  </svg>
+                </span>
+                <span class="action-button-text">Carregar da galeria do dispositivo</span>
+              </button>
+            </div>
+
+            <input class="hidden-input" id="file-input" type="file" accept="image/*">
+            <p class="helper-text" id="action-feedback">
+              Garanta a boa qualidade e boa iluminação da foto.
+            </p>
+          </div>
+
+          <aside class="panel panel-accent" id="manual">
+            <span class="panel-kicker">Calibração</span>
+            <h3>Calibrar cores da câmera</h3>
+            <p>
+              Esta etapa pode ser usada para melhorar a leitura de tons conforme o ambiente e a iluminação, usando um <b>color checker</b>.
+            </p>
+            <button class="action-button action-button-calibrate" id="calibracao" type="button">
+              Calibrar
+            </button>
+          </aside>
+        </section>
+      </section>
+
+      <section class="result-section" id="resultado" aria-live="polite">
+        <div class="result-header">
+          <div>
+            <p class="eyebrow">Resultado da análise</p>
+            <h2>Seu perfil de cores aparece aqui</h2>
+          </div>
+          <span class="status-badge" id="status-badge">Aguardando envio</span>
+        </div>
+
+        <div class="result-layout">
+          <article class="result-card result-card-main">
+            <p class="result-label">Tom principal</p>
+            <h3 id="result-season">Nenhuma análise executada</h3>
+            <p class="result-tone-detail" id="result-tone-detail"></p>
+            <p class="result-description" id="result-description"></p>
+          </article>
+
+          <article class="result-card result-card-visual">
+            <div class="image-frame">
+              <img id="result-image" src="/static/images/temporario.jpg" alt="Paleta de cores da análise">
+            </div>
+          </article>
+        </div>
+
+        <article class="result-card result-card-criteria">
+          <p class="result-label">Critérios considerados</p>
+          <ul class="criteria-list" id="criteria-list">
+            <li>Partes analisadas: pele, sobrancelhas e olhos.</li>
+            <li>Temperatura da imagem comparada em Lab e saturação observada em HSV.</li>
+            <li>Os detalhes completos aparecerão aqui após a análise.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="info-strip" id="sobre">
+        <article class="info-card">
+          <p class="info-label">O que é colorimetria?</p>
+          <p>
+            A colorimetria pessoal busca identificar grupos de cores que harmonizam melhor com pele,
+            olhos e cabelo, considerando temperatura, contraste e intensidade.
+          </p>
+        </article>
+
+        <article class="info-card">
+          <p class="info-label">Como usar</p>
+          <p>
+            Envie uma foto bem iluminada, de frente, sem filtros fortes. O retorno exibirá a estação
+            predominante e o racional usado pela análise.
+          </p>
+        </article>
+      </section>
+
+      <section class="team-section" id="quem-somos">
+        <article class="team-card team-card-main">
+          <p class="info-label">Quem somos</p>
+          <h2>Equipe do projeto ColorMatch</h2>
+          <p>
+            Este projeto foi desenvolvido como projeto da disciplina Processamento Digital de Imagens,
+            lecionada por Celso Setsuo Kurashima.
+          </p>
+          <p>
+            O sistema foi realizado por estudantes do Bacharelado em Ciência da Computação da Universidade Federal do ABC
+            (UFABC), campus Santo André - SP.
+          </p>
+        </article>
+
+        <article class="team-card team-card-members">
+          <p class="info-label">Integrantes</p>
+          <ul class="team-list">
+            <li>Fabricio da Costa Fernandes</li>
+            <li>Felipe de Lima Major</li>
+            <li>Lilian Gimenez Teixeira</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>
+        Universidade Federal do ABC (2026) -
+        <a href="https://github.com/fabriciocostaa/projeto_final_pdi" target="_blank" rel="noreferrer">Repositório GitHub</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

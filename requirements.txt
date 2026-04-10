@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+numpy
+opencv-python
+scikit-learn
+colormath
+dlib-bin
+imutils
+Pillow
+matplotlib
+opencv-python-headless
