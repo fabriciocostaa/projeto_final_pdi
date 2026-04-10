@@ -60,12 +60,12 @@ class DetectFace:
         self.detector = dlib.get_frontal_face_detector()
         self.predictor = dlib.shape_predictor(str(predictor_path))
 
-        self.img = cv2.imread(str(image))
-        if self.img is None:
+        self.original = cv2.imread(str(image))
+        if self.original is None:
             raise FileNotFoundError(f"Nao foi possivel carregar a imagem: {image}")
         
-        self.img = cv2.GaussianBlur(self.img, (5, 5), 0) 
-        #adicionando filtro gaussiano para reduzir reduído e melhorar a precisão de extração de cores
+        # ETAPA 1 - filtro gaussiano
+        self.img = cv2.GaussianBlur(self.original, (5, 5), 0)
 
         self.right_eyebrow: np.ndarray | list[object] = []
         self.left_eyebrow: np.ndarray | list[object] = []
@@ -99,6 +99,12 @@ class DetectFace:
         self.left_eye = self.extract_face_part(face_parts[3])
         self.left_cheek = self.img[shape[29][1]:shape[33][1], shape[4][0]:shape[48][0]]
         self.right_cheek = self.img[shape[29][1]:shape[33][1], shape[54][0]:shape[12][0]]
+
+        # criar imagem com landmarks desenhados
+        self.landmarks_img = self.original.copy()
+
+        for (x, y) in shape:
+            cv2.circle(self.landmarks_img, (x, y), 2, (0, 255, 0), -1)
 
     def extract_face_part(self, face_part_points: np.ndarray) -> np.ndarray:
         x, y, w, h = cv2.boundingRect(face_part_points)

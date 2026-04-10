@@ -9,10 +9,13 @@ const resultToneDetail = document.getElementById("result-tone-detail");
 const resultDescription = document.getElementById("result-description");
 const resultImage = document.getElementById("result-image");
 const criteriaList = document.getElementById("criteria-list");
+const imgGauss = document.getElementById("img-gauss");
+const imgLand = document.getElementById("img-landmarks");
 
 const setLoadingState = (isLoading, message) => {
   cameraButton.disabled = isLoading;
   uploadButton.disabled = isLoading;
+  calibrationButton.disabled = isLoading;
   statusBadge.textContent = isLoading ? "Processando..." : "Analise concluida";
   actionFeedback.textContent = message;
 };
@@ -20,6 +23,7 @@ const setLoadingState = (isLoading, message) => {
 const resetErrorState = (message) => {
   cameraButton.disabled = false;
   uploadButton.disabled = false;
+  calibrationButton.disabled = false;
   statusBadge.textContent = "Falha na analise";
   actionFeedback.textContent = message;
 };
@@ -77,6 +81,18 @@ const renderResult = (resultado) => {
   document.getElementById("resultado").scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
+const renderEtapas = (etapas) => {
+  if (!etapas) return;
+
+  if (imgGauss && etapas.gaussiano) {
+    imgGauss.src = "data:image/jpeg;base64," + etapas.gaussiano;
+  }
+
+  if (imgLand && etapas.landmarks) {
+    imgLand.src = "data:image/jpeg;base64," + etapas.landmarks;
+  }
+};
+
 const handleApiError = async (response) => {
   let detail = "Nao foi possivel concluir a analise.";
   try {
@@ -98,6 +114,7 @@ const runCameraAnalysis = async () => {
     }
 
     const data = await response.json();
+    renderEtapas(data.etapas);
     renderResult(data.resultado);
     setLoadingState(false, "Análise por câmera concluída com sucesso.");
   } catch (error) {
@@ -145,6 +162,7 @@ const runUploadAnalysis = async (file) => {
     }
 
     const data = await response.json();
+    renderEtapas(data.etapas);
     renderResult(data.resultado);
     setLoadingState(false, `Analise concluida para o arquivo ${file.name}.`);
   } catch (error) {
