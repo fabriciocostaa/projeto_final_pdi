@@ -100,8 +100,9 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
         "status": "sucesso",
 
         "etapas": {
-            "gaussiano": img_to_base64(detect.img),
+            "gaussiano": img_to_base64(detect.gaussian_img),
             "landmarks": img_to_base64(detect.landmarks_img),
+            "segmentacao": img_to_base64(detect.segmentacao_img)
         },
 
         "resultado": {

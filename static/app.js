@@ -11,6 +11,7 @@ const resultImage = document.getElementById("result-image");
 const criteriaList = document.getElementById("criteria-list");
 const imgGauss = document.getElementById("img-gauss");
 const imgLand = document.getElementById("img-landmarks");
+const imgSeg = document.getElementById("img-segmentacao");
 
 const setLoadingState = (isLoading, message) => {
   cameraButton.disabled = isLoading;
@@ -90,6 +91,10 @@ const renderEtapas = (etapas) => {
 
   if (imgLand && etapas.landmarks) {
     imgLand.src = "data:image/jpeg;base64," + etapas.landmarks;
+  }
+
+  if (imgSeg && etapas.segmentacao){
+    imgSeg.src = "data:image/jpeg;base64," + etapas.segmentacao;
   }
 };
 

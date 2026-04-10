@@ -90,25 +90,38 @@ class DetectFace:
         face_parts = []
         for _, (i, j) in face_utils.FACIAL_LANDMARKS_IDXS.items():
             face_parts.append(shape[i:j])
-
         face_parts = face_parts[1:5]
 
-        self.right_eyebrow = self.extract_face_part(face_parts[0])
-        self.left_eyebrow = self.extract_face_part(face_parts[1])
-        self.right_eye = self.extract_face_part(face_parts[2])
-        self.left_eye = self.extract_face_part(face_parts[3])
+        self.gaussian_img = self.img.copy()
+
+        self.landmarks_img = self.original.copy()
+        for (x, y) in shape:
+            cv2.circle(self.landmarks_img, (x, y), 2, (0, 255, 0), -1)    
+        
+        idxs = dict(face_utils.FACIAL_LANDMARKS_IDXS)
+        self.right_eyebrow = self.extract_face_part(shape[idxs["right_eyebrow"][0]:idxs["right_eyebrow"][1]])
+        self.left_eyebrow  = self.extract_face_part(shape[idxs["left_eyebrow"][0]:idxs["left_eyebrow"][1]])
+        self.right_eye     = self.extract_face_part(shape[idxs["right_eye"][0]:idxs["right_eye"][1]])
+        self.left_eye      = self.extract_face_part(shape[idxs["left_eye"][0]:idxs["left_eye"][1]])
         self.left_cheek = self.img[shape[29][1]:shape[33][1], shape[4][0]:shape[48][0]]
         self.right_cheek = self.img[shape[29][1]:shape[33][1], shape[54][0]:shape[12][0]]
 
-        # criar imagem com landmarks desenhados
-        self.landmarks_img = self.original.copy()
+        # imagem das regiões segmentadas destacadas
+        self.segmentacao_img = self.gaussian_img.copy()
+        regioes = [
+            (shape[29][1], shape[33][1], shape[4][0],  shape[48][0]),   # bochecha esquerda
+            (shape[29][1], shape[33][1], shape[54][0], shape[12][0]),   # bochecha direita
+        ]
+        for (y0, y1, x0, x1) in regioes:
+            cv2.rectangle(self.segmentacao_img, (x0, y0), (x1, y1), (255, 165, 0), 2)
 
-        for (x, y) in shape:
-            cv2.circle(self.landmarks_img, (x, y), 2, (0, 255, 0), -1)
+        for points in [face_parts[0], face_parts[1], face_parts[2], face_parts[3]]:
+            hull = cv2.convexHull(points)
+            cv2.polylines(self.segmentacao_img, [hull], True, (255, 165, 0), 2)
 
     def extract_face_part(self, face_part_points: np.ndarray) -> np.ndarray:
         x, y, w, h = cv2.boundingRect(face_part_points)
-        crop = self.img[y:y + h, x:x + w]
+        crop = self.img[y:y + h, x:x + w].copy()
         adj_points = np.array([np.array([p[0] - x, p[1] - y]) for p in face_part_points])
         
         mask = np.zeros((crop.shape[0], crop.shape[1]), dtype=np.uint8)
