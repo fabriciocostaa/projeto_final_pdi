@@ -121,16 +121,32 @@ class DetectFace:
 
     def extract_face_part(self, face_part_points: np.ndarray) -> np.ndarray:
         x, y, w, h = cv2.boundingRect(face_part_points)
+    
+        # .copy() evita que modificações no crop afetem self.img original
         crop = self.img[y:y + h, x:x + w].copy()
-        adj_points = np.array([np.array([p[0] - x, p[1] - y]) for p in face_part_points])
         
+        # ajusta os pontos dos landmarks para coordenadas locais do recorte
+        adj_points = np.array([np.array([p[0] - x, p[1] - y]) for p in face_part_points])
+
+        # cria máscara binária zerada do mesmo tamanho do recorte
+        # fillConvexPoly preenche o interior do contorno dos landmarks com 1
         mask = np.zeros((crop.shape[0], crop.shape[1]), dtype=np.uint8)
         cv2.fillConvexPoly(mask, adj_points, 1)
-        
+
+        # MORPH_CLOSE = dilatação seguida de erosão
+        # fecha buracos internos na máscara causados por gaps entre os landmarks
+        # exemplo: pixels não cobertos pelo fillConvexPoly dentro da sobrancelha
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)  # fecha buracos na máscara
-        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)   # remove ruído nas bordas
-        
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
+        # MORPH_OPEN = erosão seguida de dilatação
+        # remove pixels espúrios nas bordas da máscara gerados pelo fillConvexPoly
+        # evita que pixels de pele ao redor da região contaminem a extração de cor
+        # a ordem CLOSE → OPEN é intencional: primeiro fecha buracos, depois limpa bordas
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+
+        # converte para bool e pinta pixels fora da máscara de azul [255, 0, 0]
+        # o azul é filtrado depois no color_extract.py pelo color_filter do get_histogram
         mask = mask.astype(bool)
         crop[np.logical_not(mask)] = [255, 0, 0]
         return crop
