@@ -57,7 +57,7 @@ def read_root() -> FileResponse:
 def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
     try:
         resultado = analysis_details()
-        gerar_paleta(resultado["tom"], str(UPLOADED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
+        gerar_paleta(resultado["tom"], str(CAPTURED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
     except FileNotFoundError as exc:
         print(f"Erro FileNotFoundError: {exc}")
         raise HTTPException(status_code=404, detail="Imagem não encontrada.") from exc
