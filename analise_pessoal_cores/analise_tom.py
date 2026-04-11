@@ -4,8 +4,8 @@ from __future__ import annotations
 # peso = [30, 20, 5]
 def is_warm(lab_b: list[float], weights: list[float]) -> int:
     # calibração ajustada para ampliar separação entre quente e frio
-    warm_b_std = [14.0, 13.5, 5.0]
-    cool_b_std = [2.0, 2.5, -1.0]
+    warm_b_std = [18.0, 15.0, 8.0]  # Peles douradas/oliva quente
+    cool_b_std  = [12.0, 9.0, 5.0]   # pele alta, sobrancelha baixa = frio
 
     warm_dist = 0.0
     cool_dist = 0.0
@@ -19,8 +19,8 @@ def is_warm(lab_b: list[float], weights: list[float]) -> int:
 
 def is_spr(hsv_s: list[float], weights: list[float]) -> int:
     # primavera mais saturada/viva que outono
-    spr_s_std = [28.0, 38.0, 35.0]
-    fal_s_std = [18.0, 25.0, 22.0]
+    spr_s_std = [45.0, 50.0, 40.0] 
+    fal_s_std = [32.0, 38.0, 30.0] 
 
     spr_dist = 0.0
     fal_dist = 0.0
@@ -34,8 +34,8 @@ def is_spr(hsv_s: list[float], weights: list[float]) -> int:
 
 def is_smr(hsv_s: list[float], weights: list[float]) -> int:
     # verão menos saturado que inverno
-    smr_s_std = [10.0, 18.0, 20.0]
-    wnt_s_std = [18.0, 28.0, 34.0]
+    smr_s_std = [18.0, 22.0, 20.0]
+    wnt_s_std = [55.0, 65.0, 50.0]
 
     adjusted_weights = list(weights)
     adjusted_weights[1] = 0.5
