@@ -9,7 +9,7 @@ from colormath.color_objects import HSVColor, LabColor, sRGBColor
 from . import analise_tom
 from .color_extract import DominantColors
 from .deteccao_facial import DetectFace, preparar_caminho_imagem
-from .utils import build_default_result_image_payload
+from pathlib import Path
 
 
 SEASON_DETAILS = {
@@ -39,16 +39,20 @@ TONE_TO_SEASON = {
 }
 
 
-def analysis_details(imgpath: str | None = None) -> dict[str, object]:
-    resolved_imgpath = preparar_caminho_imagem(imgpath)
-    df = DetectFace(resolved_imgpath)
+def analysis_details(imgpath: str | None = None, detect: DetectFace | None = None) -> dict[str, object]:
+    if detect is None:
+        resolved_imgpath = preparar_caminho_imagem(imgpath)
+        detect = DetectFace(resolved_imgpath)
+    else:
+        resolved_imgpath = Path(str(imgpath))
+    
     face_parts = [
-        df.left_cheek,
-        df.right_cheek,
-        df.left_eyebrow,
-        df.right_eyebrow,
-        df.left_eye,
-        df.right_eye,
+        detect.left_cheek,
+        detect.right_cheek,
+        detect.left_eyebrow,
+        detect.right_eyebrow,
+        detect.left_eye,
+        detect.right_eye,
     ]
 
     extracted_colors = []
@@ -85,11 +89,13 @@ def analysis_details(imgpath: str | None = None) -> dict[str, object]:
             tone = "Tom quente de primavera"
         else:
             tone = "Tom quente de outono"
+        print(f"lab_b: {lab_b_values}  hsv_s: {hsv_s_values}  → {tone}")
     else:
         if analise_tom.is_smr(hsv_s_values, hsv_weight):
             tone = "Tom fresco de verão"
         else:
             tone = "Tom legal de inverno"
+        print(f"lab_b: {lab_b_values}  hsv_s: {hsv_s_values}  → {tone}")
 
     season_key = TONE_TO_SEASON[tone]
     season_info = SEASON_DETAILS[season_key]

@@ -56,7 +56,8 @@ def read_root() -> FileResponse:
 @app.post("/api/analise")
 def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
     try:
-        resultado = analysis_details()
+        detect = DetectFace(str(CAPTURED_IMAGE_PATH))
+        resultado = analysis_details(str(CAPTURED_IMAGE_PATH), detect=detect)
         gerar_paleta(resultado["tom"], str(CAPTURED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
     except FileNotFoundError as exc:
         print(f"Erro FileNotFoundError: {exc}")
@@ -67,6 +68,13 @@ def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
 
     return {
         "status": "sucesso",
+
+        "etapas": {
+            "gaussiano": img_to_base64(detect.gaussian_img),
+            "landmarks": img_to_base64(detect.landmarks_img),
+            "segmentacao": img_to_base64(detect.segmentacao_img)
+        },
+
         "resultado": {
             "tom_principal": resultado["estacao"],
             "tom_detectado": resultado["tom"],
@@ -86,7 +94,7 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
         detect = DetectFace(str(UPLOADED_IMAGE_PATH))
 
         # análise original continua igual
-        resultado = analysis_details(str(UPLOADED_IMAGE_PATH))
+        resultado = analysis_details(str(UPLOADED_IMAGE_PATH), detect= detect)
         gerar_paleta(resultado["tom"], str(UPLOADED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
 
     except FileNotFoundError as exc:
