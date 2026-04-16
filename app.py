@@ -10,7 +10,7 @@ from pydantic import BaseModel
 import uvicorn
 
 from analise_pessoal_cores import analysis_details, save_base64_as_jpg, encode_image_base64, gerar_paleta
-from analise_pessoal_cores import check_cores
+from analise_pessoal_cores import check_cores, capturar_imagem
 from analise_pessoal_cores import DetectFace
 from analise_pessoal_cores.utils import img_to_base64
 
@@ -56,6 +56,7 @@ def read_root() -> FileResponse:
 @app.post("/api/analise")
 def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
     try:
+        capturar_imagem()
         detect = DetectFace(str(CAPTURED_IMAGE_PATH))
         resultado = analysis_details(str(CAPTURED_IMAGE_PATH), detect=detect)
         gerar_paleta(resultado["tom"], str(CAPTURED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
@@ -64,7 +65,7 @@ def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
         raise HTTPException(status_code=404, detail="Imagem não encontrada.") from exc
     except Exception as exc:
         print(f"Erro Exception: {exc}")
-        raise HTTPException(status_code=400, detail="Erro ao processar a imagem") from exc
+        raise HTTPException(status_code=400, detail="Erro ao processar a imagem, tente uma imagem mais iluminada !") from exc
 
     return {
         "status": "sucesso",
@@ -102,7 +103,7 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
         raise HTTPException(status_code=404, detail="Imagem não encontrada.") from exc
     except Exception as exc:
         print(f"ERRO Exception: {exc}")
-        raise HTTPException(status_code=400, detail="Erro ao processar a imagem") from exc
+        raise HTTPException(status_code=400, detail="Erro ao processar a imagem, tente uma imagem mais iluminada !") from exc
 
     return {
         "status": "sucesso",

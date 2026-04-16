@@ -30,7 +30,6 @@ def preparar_caminho_imagem(
 
 def capturar_imagem(output_path: str | Path = DEFAULT_CAPTURE_PATH) -> None:
     cap = cv2.VideoCapture(0)
-    print("Pressione [s] para salvar as imagens ou [q] para sair.")
 
     output_path = Path(output_path)
 
