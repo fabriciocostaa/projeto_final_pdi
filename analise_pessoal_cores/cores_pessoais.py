@@ -8,7 +8,7 @@ from colormath.color_objects import HSVColor, LabColor, sRGBColor
 
 from . import analise_tom
 from .color_extract import DominantColors
-from .deteccao_facial import DetectFace, preparar_caminho_imagem
+from .deteccao_facial import DetectFace
 from pathlib import Path
 
 

@@ -10,9 +10,7 @@ from pydantic import BaseModel
 import uvicorn
 import numpy as np
 
-from analise_pessoal_cores import analysis_details, save_base64_as_jpg, encode_image_base64, gerar_paleta
-from analise_pessoal_cores import check_cores
-from analise_pessoal_cores import DetectFace, capturar_imagem
+from analise_pessoal_cores import check_cores, cores_pessoais, deteccao_facial, utils, recomendacao_cores
 from analise_pessoal_cores.utils import img_to_base64
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -60,11 +58,11 @@ def read_root() -> FileResponse:
 @app.post("/api/analise")
 def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
     try:
-        capturar_imagem()
+        deteccao_facial.capturar_imagem()
 
-        detect = DetectFace(str(CAPTURED_IMAGE_PATH), ccm=MATRIZ_CALIBRACAO, white_patch_rgb=VALOR_PATCH_BRANCO)
-        resultado = analysis_details(str(CAPTURED_IMAGE_PATH), detect=detect)
-        gerar_paleta(resultado["tom"], str(CAPTURED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
+        detect = deteccao_facial.DetectFace(str(CAPTURED_IMAGE_PATH), ccm=MATRIZ_CALIBRACAO, white_patch_rgb=VALOR_PATCH_BRANCO)
+        resultado = cores_pessoais.analysis_details(str(CAPTURED_IMAGE_PATH), detect=detect)
+        recomendacao_cores.gerar_paleta(resultado["tom"], str(CAPTURED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
     except FileNotFoundError as exc:
         print(f"Erro FileNotFoundError: {exc}")
         raise HTTPException(status_code=404, detail="Imagem não encontrada.") from exc
@@ -86,7 +84,7 @@ def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
             "tom_detectado": resultado["tom"],
             "informacoes_estacao": resultado["descricao_estacao"],
             "criterios_decisao": resultado["criterios"],
-            "imagem_exibicao_base64": encode_image_base64(RESULT_IMAGE_PATH),
+            "imagem_exibicao_base64": utils.encode_image_base64(RESULT_IMAGE_PATH),
         },
     }
 
@@ -95,13 +93,13 @@ def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
 def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
     try:
         # salva imagem enviada
-        save_base64_as_jpg(payload.imagem_base64, UPLOADED_IMAGE_PATH)
+        utils.save_base64_as_jpg(payload.imagem_base64, UPLOADED_IMAGE_PATH)
 
-        detect = DetectFace(str(UPLOADED_IMAGE_PATH), ccm=MATRIZ_CALIBRACAO, white_patch_rgb=VALOR_PATCH_BRANCO)
+        detect = deteccao_facial.DetectFace(str(UPLOADED_IMAGE_PATH), ccm=MATRIZ_CALIBRACAO, white_patch_rgb=VALOR_PATCH_BRANCO)
 
         # análise original continua igual
-        resultado = analysis_details(str(UPLOADED_IMAGE_PATH), detect= detect)
-        gerar_paleta(resultado["tom"], str(UPLOADED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
+        resultado = cores_pessoais.analysis_details(str(UPLOADED_IMAGE_PATH), detect= detect)
+        recomendacao_cores.gerar_paleta(resultado["tom"], str(UPLOADED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
 
     except FileNotFoundError as exc:
         print(f"ERRO FileNotFoundError: {exc}")
@@ -124,7 +122,7 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
             "tom_detectado": resultado["tom"],
             "informacoes_estacao": resultado["descricao_estacao"],
             "criterios_decisao": resultado["criterios"],
-            "imagem_exibicao_base64": encode_image_base64(RESULT_IMAGE_PATH),
+            "imagem_exibicao_base64": utils.encode_image_base64(RESULT_IMAGE_PATH),
         },
     }
 
@@ -132,7 +130,7 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
 def calibracao() -> dict[str, object]:
     global MATRIZ_CALIBRACAO, VALOR_PATCH_BRANCO
     try:
-        capturar_imagem(IMAGE_CHECK_PATH)
+        deteccao_facial.capturar_imagem(IMAGE_CHECK_PATH)
         # 1. Detecta os patches
         patches_lidos = check_cores.detectar_patches(str(IMAGE_CHECK_PATH))
         #O patch 19 é o branco. Pegamos o RGB que a câmera leu dele:
