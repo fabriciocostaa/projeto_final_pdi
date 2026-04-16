@@ -158,19 +158,3 @@ def gerar_ccm(patches_medidos, patches_referencia):
     # Resolve Medidos * CCM = Referencia
     ccm, _, _, _ = np.linalg.lstsq(medidos, referencia, rcond=None)
     return ccm
-
-def corrigir_imagem(image_path, ccm):
-    img = cv2.imread(str(image_path))
-    if img is None: return
-    
-    # Converte para float32 e aplica a matriz
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
-    img_corrigida = img_rgb @ ccm
-    
-    # Clip e volta para 8bits BGR
-    img_corrigida = np.clip(img_corrigida, 0, 1)
-    img_corrigida = (img_corrigida * 255).astype(np.uint8)
-    final_bgr = cv2.cvtColor(img_corrigida, cv2.COLOR_RGB2BGR)
-    
-    # Sobrescreve a imagem original com a versão calibrada
-    cv2.imwrite(str(image_path), final_bgr)

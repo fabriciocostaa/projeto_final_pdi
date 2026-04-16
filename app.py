@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import uvicorn
+import numpy as np
 
 from analise_pessoal_cores import analysis_details, save_base64_as_jpg, encode_image_base64, gerar_paleta
 from analise_pessoal_cores import check_cores
@@ -22,6 +23,7 @@ RESULT_IMAGE_PATH = STATIC_DIR / "images" / "imagem_resultado.jpg"
 IMAGE_CHECK_PATH = STATIC_DIR / "images" / "correcao_cores.jpg"
 
 MATRIZ_CALIBRACAO = None 
+VALOR_PATCH_BRANCO = None
 
 class AnaliseRequest(BaseModel):
     capturar_webcam: bool = True
@@ -60,10 +62,7 @@ def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
     try:
         capturar_imagem()
 
-        if MATRIZ_CALIBRACAO is not None:
-            check_cores.corrigir_imagem(CAPTURED_IMAGE_PATH, MATRIZ_CALIBRACAO) #usando o colorchecker
-
-        detect = DetectFace(str(CAPTURED_IMAGE_PATH))
+        detect = DetectFace(str(CAPTURED_IMAGE_PATH), ccm=MATRIZ_CALIBRACAO, white_patch_rgb=VALOR_PATCH_BRANCO)
         resultado = analysis_details(str(CAPTURED_IMAGE_PATH), detect=detect)
         gerar_paleta(resultado["tom"], str(CAPTURED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
     except FileNotFoundError as exc:
@@ -98,10 +97,7 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
         # salva imagem enviada
         save_base64_as_jpg(payload.imagem_base64, UPLOADED_IMAGE_PATH)
 
-        if MATRIZ_CALIBRACAO is not None:
-            check_cores.corrigir_imagem(UPLOADED_IMAGE_PATH, MATRIZ_CALIBRACAO) #usando o colorchecker
-
-        detect = DetectFace(str(UPLOADED_IMAGE_PATH))
+        detect = DetectFace(str(UPLOADED_IMAGE_PATH), ccm=MATRIZ_CALIBRACAO, white_patch_rgb=VALOR_PATCH_BRANCO)
 
         # análise original continua igual
         resultado = analysis_details(str(UPLOADED_IMAGE_PATH), detect= detect)
@@ -134,11 +130,13 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
 
 @app.post("/api/check_cores")
 def calibracao() -> dict[str, object]:
-    global MATRIZ_CALIBRACAO
+    global MATRIZ_CALIBRACAO, VALOR_PATCH_BRANCO
     try:
         capturar_imagem(IMAGE_CHECK_PATH)
         # 1. Detecta os patches
         patches_lidos = check_cores.detectar_patches(str(IMAGE_CHECK_PATH))
+        #O patch 19 é o branco. Pegamos o RGB que a câmera leu dele:
+        VALOR_PATCH_BRANCO = np.array(patches_lidos[18])
         # 2. Calcula métricas para o log/front
         metricas = check_cores.calcular_metricas(patches_lidos)
         # 3. GERA E SALVA A MATRIZ

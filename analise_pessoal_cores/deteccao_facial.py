@@ -55,15 +55,28 @@ def capturar_imagem(output_path: str | Path = DEFAULT_CAPTURE_PATH) -> None:
 
 
 class DetectFace:
-    def __init__(self, image: str | Path, predictor_path: str | Path = DEFAULT_LANDMARK_PATH) -> None:
+    def __init__(self, image: str | Path, predictor_path: str | Path = DEFAULT_LANDMARK_PATH,ccm: np.ndarray | None = None, white_patch_rgb: np.ndarray | None = None) -> None:
         self.detector = dlib.get_frontal_face_detector()
         self.predictor = dlib.shape_predictor(str(predictor_path))
 
-        self.original = cv2.imread(str(image))
-        if self.original is None:
+        img_raw = cv2.imread(str(image))
+        if img_raw is None:
             raise FileNotFoundError(f"Nao foi possivel carregar a imagem: {image}")
         
-        # ETAPA 1 - filtro gaussiano
+        # 1. CORREÇÃO DE PONTO BRANCO (Sempre na imagem nítida)
+        if white_patch_rgb is not None:
+            img_raw = self._corrigir_ponto_branco(img_raw, white_patch_rgb)
+            print(f"array de ponto branco: {white_patch_rgb}")
+
+        # 2. APLICAR MATRIZ CCM (Sempre na imagem nítida)
+        if ccm is not None:
+            img_raw = self._aplicar_ccm(img_raw, ccm)
+
+        # Agora guardamos a imagem final calibrada e nítida
+        self.original = img_raw
+
+        # 3. FILTRO GAUSSIANO (Criado a partir da imagem já calibrada)
+        # self.img é usada para extrair as cores das partes do rosto
         self.img = cv2.GaussianBlur(self.original, (5, 5), 0)
 
         self.right_eyebrow: np.ndarray | list[object] = []
@@ -74,6 +87,27 @@ class DetectFace:
         self.right_cheek: np.ndarray | list[object] = []
 
         self.detect_face_part()
+
+    def _corrigir_ponto_branco(self, img_bgr: np.ndarray, white_patch_rgb: np.ndarray) -> np.ndarray:
+        # Converte para float32 [0, 1]
+        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+        
+        # Evita divisão por zero e calcula ganhos
+        source_wp = np.maximum(white_patch_rgb / 255.0, 1e-5)
+        gains = 1.0 / source_wp
+        
+        # Aplica e clipa
+        corrected = np.clip(img_rgb * gains, 0, 1)
+        
+        # Volta para BGR 8-bit
+        corrected_8bit = (corrected * 255).astype(np.uint8)
+        return cv2.cvtColor(corrected_8bit, cv2.COLOR_RGB2BGR)
+
+    def _aplicar_ccm(self, img_bgr: np.ndarray, ccm: np.ndarray) -> np.ndarray:
+        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+        img_corrigida = np.clip(img_rgb @ ccm, 0, 1)
+        res = (img_corrigida * 255).astype(np.uint8)
+        return cv2.cvtColor(res, cv2.COLOR_RGB2BGR)
 
     def detect_face_part(self) -> None:
         gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
