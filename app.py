@@ -126,7 +126,7 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
 @app.post("/api/check_cores")
 def calibracao() -> dict[str, object]:
     try:
-        capturar_imagem("/static/imagens/check_color.jpg")
+        capturar_imagem(IMAGE_CHECK_PATH)
         metricas = check_cores.analisar_color_checker(str(IMAGE_CHECK_PATH))
     except FileNotFoundError as exc:
         print(f"ERRO FileNotFoundError: {exc}")
