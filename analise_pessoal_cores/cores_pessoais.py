@@ -40,11 +40,8 @@ TONE_TO_SEASON = {
 
 
 def analysis_details(imgpath: str | None = None, detect: DetectFace | None = None) -> dict[str, object]:
-    if detect is None:
-        resolved_imgpath = preparar_caminho_imagem(imgpath)
-        detect = DetectFace(resolved_imgpath)
-    else:
-        resolved_imgpath = Path(str(imgpath))
+    
+    resolved_imgpath = Path(str(imgpath))
     
     face_parts = [
         detect.left_cheek,
