@@ -151,11 +151,26 @@ def calcular_metricas(
         "detalhes": detalhes,
     }
 
+def gerar_ccm(patches_medidos, patches_referencia):
+    # Converte listas de tuplas para arrays numpy e normaliza
+    medidos = np.array(patches_medidos, dtype=np.float32) / 255.0
+    referencia = np.array(patches_referencia, dtype=np.float32) / 255.0
+    # Resolve Medidos * CCM = Referencia
+    ccm, _, _, _ = np.linalg.lstsq(medidos, referencia, rcond=None)
+    return ccm
 
-def analisar_color_checker(image_path: str) -> dict[str, object]:
-    """
-    Função principal — recebe o caminho da foto do color checker
-    e retorna as métricas completas de acurácia.
-    """
-    patches_medidos = detectar_patches(image_path)
-    return calcular_metricas(patches_medidos)
+def corrigir_imagem(image_path, ccm):
+    img = cv2.imread(str(image_path))
+    if img is None: return
+    
+    # Converte para float32 e aplica a matriz
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+    img_corrigida = img_rgb @ ccm
+    
+    # Clip e volta para 8bits BGR
+    img_corrigida = np.clip(img_corrigida, 0, 1)
+    img_corrigida = (img_corrigida * 255).astype(np.uint8)
+    final_bgr = cv2.cvtColor(img_corrigida, cv2.COLOR_RGB2BGR)
+    
+    # Sobrescreve a imagem original com a versão calibrada
+    cv2.imwrite(str(image_path), final_bgr)

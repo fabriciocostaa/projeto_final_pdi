@@ -10,8 +10,8 @@ from pydantic import BaseModel
 import uvicorn
 
 from analise_pessoal_cores import analysis_details, save_base64_as_jpg, encode_image_base64, gerar_paleta
-from analise_pessoal_cores import check_cores, capturar_imagem
-from analise_pessoal_cores import DetectFace
+from analise_pessoal_cores import check_cores
+from analise_pessoal_cores import DetectFace, capturar_imagem
 from analise_pessoal_cores.utils import img_to_base64
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -20,6 +20,8 @@ CAPTURED_IMAGE_PATH = STATIC_DIR / "images" / "sua_foto.jpg"
 UPLOADED_IMAGE_PATH = STATIC_DIR / "images" / "imagem_carregada.jpg"
 RESULT_IMAGE_PATH = STATIC_DIR / "images" / "imagem_resultado.jpg"
 IMAGE_CHECK_PATH = STATIC_DIR / "images" / "correcao_cores.jpg"
+
+MATRIZ_CALIBRACAO = None 
 
 class AnaliseRequest(BaseModel):
     capturar_webcam: bool = True
@@ -57,6 +59,10 @@ def read_root() -> FileResponse:
 def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
     try:
         capturar_imagem()
+
+        if MATRIZ_CALIBRACAO is not None:
+            check_cores.corrigir_imagem(CAPTURED_IMAGE_PATH, MATRIZ_CALIBRACAO) #usando o colorchecker
+
         detect = DetectFace(str(CAPTURED_IMAGE_PATH))
         resultado = analysis_details(str(CAPTURED_IMAGE_PATH), detect=detect)
         gerar_paleta(resultado["tom"], str(CAPTURED_IMAGE_PATH), str(RESULT_IMAGE_PATH))
@@ -92,6 +98,9 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
         # salva imagem enviada
         save_base64_as_jpg(payload.imagem_base64, UPLOADED_IMAGE_PATH)
 
+        if MATRIZ_CALIBRACAO is not None:
+            check_cores.corrigir_imagem(UPLOADED_IMAGE_PATH, MATRIZ_CALIBRACAO) #usando o colorchecker
+
         detect = DetectFace(str(UPLOADED_IMAGE_PATH))
 
         # análise original continua igual
@@ -125,9 +134,16 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
 
 @app.post("/api/check_cores")
 def calibracao() -> dict[str, object]:
+    global MATRIZ_CALIBRACAO
     try:
         capturar_imagem(IMAGE_CHECK_PATH)
-        metricas = check_cores.analisar_color_checker(str(IMAGE_CHECK_PATH))
+        # 1. Detecta os patches
+        patches_lidos = check_cores.detectar_patches(str(IMAGE_CHECK_PATH))
+        # 2. Calcula métricas para o log/front
+        metricas = check_cores.calcular_metricas(patches_lidos)
+        # 3. GERA E SALVA A MATRIZ
+        MATRIZ_CALIBRACAO = check_cores.gerar_ccm(patches_lidos, check_cores.REFERENCE_PATCHES_RGB)
+        print(MATRIZ_CALIBRACAO)
     except FileNotFoundError as exc:
         print(f"ERRO FileNotFoundError: {exc}")
         raise HTTPException(status_code=404, detail="Imagem não encontrada.") from exc
@@ -135,8 +151,7 @@ def calibracao() -> dict[str, object]:
         print(f"ERRO Exception: {exc}")
         raise HTTPException(status_code=400, detail="Erro ao processar calibração.") from exc
     
-    print(metricas)
-    return {"status": "sucesso", "metricas": metricas}
+    return {"status": "sucesso", "metricas": metricas, "calibrado": True}
 
 
 if __name__ == "__main__":
