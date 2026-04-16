@@ -19,7 +19,7 @@ STATIC_DIR = BASE_DIR / "static"
 CAPTURED_IMAGE_PATH = STATIC_DIR / "images" / "sua_foto.jpg"
 UPLOADED_IMAGE_PATH = STATIC_DIR / "images" / "imagem_carregada.jpg"
 RESULT_IMAGE_PATH = STATIC_DIR / "images" / "imagem_resultado.jpg"
-UPLOADED_IMAGE_CHECK_PATH = STATIC_DIR / "images" / "correcao_cores.jpg"
+IMAGE_CHECK_PATH = STATIC_DIR / "images" / "correcao_cores.jpg"
 
 class AnaliseRequest(BaseModel):
     capturar_webcam: bool = True
@@ -124,10 +124,10 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
     }
 
 @app.post("/api/check_cores")
-def calibracao(payload: AnaliseUploadRequest) -> dict[str, object]:
+def calibracao() -> dict[str, object]:
     try:
-        save_base64_as_jpg(payload.imagem_base64, UPLOADED_IMAGE_CHECK_PATH)
-        metricas = check_cores.analisar_color_checker(str(UPLOADED_IMAGE_CHECK_PATH))
+        capturar_imagem("/static/imagens/check_color.jpg")
+        metricas = check_cores.analisar_color_checker(str(IMAGE_CHECK_PATH))
     except FileNotFoundError as exc:
         print(f"ERRO FileNotFoundError: {exc}")
         raise HTTPException(status_code=404, detail="Imagem não encontrada.") from exc

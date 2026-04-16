@@ -128,17 +128,10 @@ const runCameraAnalysis = async () => {
 };
 
 const runColorCheck = async (file) => {
-  setLoadingState(true, "Convertendo a imagem e enviando para análise...");
+  setLoadingState(true, "Abrindo a webcam e aguardando a captura do colorchecker...");
 
   try {
-    const imagemBase64 = await toBase64(file);
-    const response = await fetch("/api/check_cores", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ imagem_base64: imagemBase64 }),
-    });
+    const response = await fetch("/api/check_cores", { method: "POST" });
 
     if (!response.ok) {
       await handleApiError(response);
@@ -175,28 +168,20 @@ const runUploadAnalysis = async (file) => {
   }
 };
 
-let flag = null;
 cameraButton.addEventListener("click", runCameraAnalysis);
 
-uploadButton.addEventListener("click", () => {
-  flag = "upload";
-  fileInput.click();
-});
+calibrationButton.addEventListener("click", runColorCheck);
 
-calibrationButton.addEventListener("click", () => {
-  flag = "calibracao";
+uploadButton.addEventListener("click", () => {
   fileInput.click();
 });
 
 fileInput.addEventListener("change", async (event) => {
   const [file] = event.target.files;
-  if (!file) return;
-
-  if (flag === "calibracao") {
-    await runColorCheck(file);
-  } else if (flag === "upload") {
-    await runUploadAnalysis(file);
-  }
-
+  if (!file) 
+    return;
+  
+  await runUploadAnalysis(file);
+  
   fileInput.value = "";
 });
