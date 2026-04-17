@@ -119,19 +119,20 @@ class DetectFace:
         rect = rects[0]
         shape = self.predictor(gray, rect)
         shape = face_utils.shape_to_np(shape)
-
-        face_parts = []
-        for _, (i, j) in face_utils.FACIAL_LANDMARKS_IDXS.items():
-            face_parts.append(shape[i:j])
-        face_parts = face_parts[1:5]
+        idxs = dict(face_utils.FACIAL_LANDMARKS_IDXS)
+        face_parts = [
+            shape[idxs["right_eyebrow"][0]:idxs["right_eyebrow"][1]],
+            shape[idxs["left_eyebrow"][0]:idxs["left_eyebrow"][1]],
+            shape[idxs["right_eye"][0]:idxs["right_eye"][1]],
+            shape[idxs["left_eye"][0]:idxs["left_eye"][1]],
+        ]
 
         self.gaussian_img = self.img.copy()
 
         self.landmarks_img = self.original.copy()
         for (x, y) in shape:
             cv2.circle(self.landmarks_img, (x, y), 2, (0, 255, 0), -1)    
-        
-        idxs = dict(face_utils.FACIAL_LANDMARKS_IDXS)
+
         self.right_eyebrow = self.extract_face_part(shape[idxs["right_eyebrow"][0]:idxs["right_eyebrow"][1]])
         self.left_eyebrow  = self.extract_face_part(shape[idxs["left_eyebrow"][0]:idxs["left_eyebrow"][1]])
         self.right_eye     = self.extract_face_part(shape[idxs["right_eye"][0]:idxs["right_eye"][1]])

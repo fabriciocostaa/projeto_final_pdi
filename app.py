@@ -74,6 +74,7 @@ def iniciar_analise() -> dict[str, object]:  # payload: AnaliseRequest
         "status": "sucesso",
 
         "etapas": {
+            "original": utils.encode_image_base64(CAPTURED_IMAGE_PATH),
             "gaussiano": img_to_base64(detect.gaussian_img),
             "landmarks": img_to_base64(detect.landmarks_img),
             "segmentacao": img_to_base64(detect.segmentacao_img)
@@ -112,6 +113,7 @@ def iniciar_analise_upload(payload: AnaliseUploadRequest) -> dict[str, object]:
         "status": "sucesso",
 
         "etapas": {
+            "original": utils.encode_image_base64(UPLOADED_IMAGE_PATH),
             "gaussiano": img_to_base64(detect.gaussian_img),
             "landmarks": img_to_base64(detect.landmarks_img),
             "segmentacao": img_to_base64(detect.segmentacao_img)

@@ -9,6 +9,7 @@ const resultToneDetail = document.getElementById("result-tone-detail");
 const resultDescription = document.getElementById("result-description");
 const resultImage = document.getElementById("result-image");
 const criteriaList = document.getElementById("criteria-list");
+const imgOriginal = document.getElementById("img-original");
 const imgGauss = document.getElementById("img-gauss");
 const imgLand = document.getElementById("img-landmarks");
 const imgSeg = document.getElementById("img-segmentacao");
@@ -84,6 +85,10 @@ const renderResult = (resultado) => {
 
 const renderEtapas = (etapas) => {
   if (!etapas) return;
+
+  if (imgOriginal && etapas.original) {
+    imgOriginal.src = "data:image/jpeg;base64," + etapas.original;
+  }
 
   if (imgGauss && etapas.gaussiano) {
     imgGauss.src = "data:image/jpeg;base64," + etapas.gaussiano;

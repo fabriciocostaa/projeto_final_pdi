@@ -542,9 +542,10 @@ justify-content: center;
 font-weight: bold;
 }
 
-.timeline-number.green { background: #2ecc71; }
-.timeline-number.yellow { background: #f1c40f; }
-.timeline-number.purple { background: #a29bfe; }
+.timeline-number.blue { background: #2e85cc; color: #fff; }
+.timeline-number.green { background: #2ecc71; color: #fff; }
+.timeline-number.yellow { background: #f1c40f; color: #fff; }
+.timeline-number.purple { background: #a29bfe; color: #fff; }
 
 .timeline-content {
 flex: 1;
@@ -562,6 +563,7 @@ padding: 3px 8px;
 border-radius: 10px;
 }
 
+.badge.blue { background: #2e85cc33; color: #1a5fa0; }
 .badge.green { background: #2ecc7133; }
 .badge.yellow { background: #f1c40f33; }
 .badge.purple { background: #a29bfe33; }
